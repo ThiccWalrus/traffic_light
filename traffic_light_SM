@@ -1,0 +1,42 @@
+module traffic_light_SM(clk, reset, T, GN, YN, RN, GE, YE, RE);
+	input clk, reset , T;
+	output reg  GN, YN, RN, GE, YE, RE;
+	
+	parameter red_red = 4'b0, red_green = 4'b0001, red_yellow = 4'b0010, red_redr= 4'b0100, green_red = 4'b0100, yellow_red = 4'b1010;
+	reg [3:0] state, next_state;
+	
+	//state update block
+	always @(posedge clk or posedge reset) begin
+		if(reset) state <= red_red;
+		else state <= next_state;
+	end
+	
+	
+	//next state combinational circuit
+	always @(state or T) begin
+		case (state)
+			red_red: next_state <= red_green;
+			red_green: next_state <= red_yellow;
+			red_yellow: next_state <= red_redr;
+			red_redr: next_state <= green_red;
+			green_red: next_state <= yellow_red;
+			yellow_red: next_state <= red_red;
+		endcase
+	
+	end
+	
+	//output combinational circuit (output logic)
+	always @ (state or T) begin
+		case (state)
+			red_green: {GN, YN, RN, GE, YE, RE} <= 6'b001100;
+			red_yellow: {GN, YN, RN, GE, YE, RE} <= 6'b01010;
+			green_red: {GN, YN, RN, GE, YE, RE} <= 6'b100001;
+			yellow_red: {GN, YN, RN, GE, YE, RE} <= 6'b010001;
+			red_red: {GN, YN, RN, GE, YE, RE} <=  6'b001001;
+			red_redr: {GN, YN, RN, GE, YE, RE} <= 6'b001001;
+		endcase
+	
+	end
+
+endmodule
+
